@@ -232,6 +232,7 @@ class MainViewController: UIViewController {
     @objc func refreshWeatherData() {
         self.viewModel.refreshWeatherData() {
             self.refreshControl.endRefreshing()
+            self.view.setNeedsLayout()
         }
     }
 }

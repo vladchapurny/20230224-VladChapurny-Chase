@@ -21,6 +21,7 @@ class OpenWeatherMapService: OpenWeatherQueries {
     
     /// Function to fetch current weather for given city location
     func currentWeather(city: String) -> AnyPublisher<WeatherData, Error> {
+        print("Started fetch for \(city)")
         
         /// Check if the city url is correct
         guard let url = Utils.buildCityURL(city: city) else {
@@ -44,6 +45,7 @@ class OpenWeatherMapService: OpenWeatherQueries {
     
     /// Function to get weather by using location coordinates
     func currentWeather(lat: Double, lon: Double) -> AnyPublisher<WeatherData, Error> {
+        print("Started fetch for \(lat), \(lon)")
         
         /// Check if the location coordinate url is correct
         guard let url = Utils.buildGeoURL(lat: lat, lon: lon) else {
