@@ -7,20 +7,30 @@
 
 import UIKit
 
+/*
+ * Custom Cell for WeatherTable
+ */
 class WeatherViewCell: UITableViewCell {
     
+    // MARK: Variables
+    /// Set title of the cell
     var titleText: String? {
         didSet {
+            /// update correct label
             self.title.text = titleText
         }
     }
     
+    /// Set info of the cell
     var infoText: String? {
         didSet {
+            /// update correct label
             self.info.text = infoText
         }
     }
     
+    // MARK: Init
+    /// Build the cell
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
@@ -43,6 +53,8 @@ class WeatherViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: Views
+    /// Title label
     private let title: UILabel = {
         let lbl = UILabel()
         lbl.translatesAutoresizingMaskIntoConstraints = false
@@ -50,6 +62,7 @@ class WeatherViewCell: UITableViewCell {
         return lbl
     }()
     
+    /// Info label
     private let info: UILabel = {
         let lbl = UILabel()
         lbl.translatesAutoresizingMaskIntoConstraints = false

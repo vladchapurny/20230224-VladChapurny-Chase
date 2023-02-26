@@ -7,14 +7,23 @@
 
 import Foundation
 
-struct WeatherResponse: Codable {
+/*
+ * Model for our Weather Data
+ */
+struct WeatherData: Codable {
+    /// weather information
     var weather: [Weather]?
+    /// main information
     var main: Main?
+    /// visibility (only comes in Metric)
     var visibility: Int?
+    /// Name of city in US
     var name: String?
     
+    /// empty Init
     init() { }
     
+    // DEMO: design decision for demo purpose to introduce codingkeys and init for decoder
     enum CodingKeys: String, CodingKey {
         case weather = "weather"
         case main = "main"
@@ -30,10 +39,10 @@ struct WeatherResponse: Codable {
         name = try values.decodeIfPresent(String.self, forKey: .name)
     }
     
-    
-    // MARK: INNER STRUCTS FOR DECODING (could be separated out)
     struct Weather: Codable {
+        /// weather description
         var description: String?
+        /// weather icon
         var icon: String?
         
         enum CodingKeys: String, CodingKey {
@@ -49,9 +58,13 @@ struct WeatherResponse: Codable {
     }
 
     struct Main: Codable {
+        /// current temperature in °F
         var temp: Double?
+        /// feels like in °F
         var feelsLike: Double?
+        /// pressure
         var pressure: Int?
+        /// humidity percentage
         var humidity: Int?
         
         enum CodingKeys: String, CodingKey {
@@ -70,5 +83,3 @@ struct WeatherResponse: Codable {
         }
     }
 }
-
-

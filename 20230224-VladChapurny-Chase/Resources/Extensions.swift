@@ -11,7 +11,7 @@ import UIKit
 
 // MARK: - UIView Extensions
 extension UIView {
-    /// Applies a custom Orange to Red to Pink gradient to the background
+    /// Applies a custom blue to system color gradient
     func customGradient() {
         
         /// Making sure to not overflow the sublayers array with the same gradient by removing the gradient if it is already there

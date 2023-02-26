@@ -6,17 +6,35 @@
 //
 import Foundation
 
+/*
+ * Utilities class
+ */
 class Utils {
+    
+    /// Converts generic type to String
+    ///
+    /// - warning: nil parameter returns custom empty string
+    /// - parameter value: generic type to convert (can be nil)
+    /// - returns: string representation of generic value
     static func Stringify<T>(_ value: T?) -> String {
-        guard let value = value else { return "---" }
+        guard let value = value else { return Constants.emptyString }
         return String(describing: value)
     }
 
+    /// Rounds temperature value
+    ///
+    /// - parameter value: temperature (can be nil)
+    /// - returns: optional int of rounded value
     static func RoundTemp(_ value: Double?) -> Int? {
         guard let value = value else { return nil }
         return Int(round(value))
     }
 
+    /// Builds URL for geolocation
+    ///
+    /// - parameter lat: latitude
+    /// - parameter lon: longitude
+    /// - returns: built url
     static func buildGeoURL(lat: Double, lon: Double) -> URL? {
         guard let keys = NSDictionary(contentsOfFile: Bundle.main.path(forResource: "Keys", ofType: "plist") ?? "") else {
             return nil
@@ -36,6 +54,10 @@ class Utils {
         return components.url
     }
 
+    /// Builds URL for city
+    ///
+    /// - parameter city: city name
+    /// - returns: built url
     static func buildCityURL(city: String) -> URL? {
         guard let keys = NSDictionary(contentsOfFile: Bundle.main.path(forResource: "Keys", ofType: "plist") ?? "") else {
             return nil
