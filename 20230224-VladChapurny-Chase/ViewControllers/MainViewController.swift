@@ -7,14 +7,17 @@
 
 import UIKit
 import Combine
-import CoreLocation
 
 class MainViewController: UIViewController {
     
     // MARK: Variables
     let searchController = UISearchController()
-    let viewModel = MainWeatherViewModel()
+    let viewModel: MainWeatherViewModel = MainWeatherViewModel()
+    private let refreshControl = UIRefreshControl()
     private var cancellables = Set<AnyCancellable>()
+    private var compactConstraints: [NSLayoutConstraint] = []
+    private var regularConstraints: [NSLayoutConstraint] = []
+    private var viewOffScreen: Bool = false
     
     // MARK: Views
     private let weatherStack: UIStackView = {
@@ -50,7 +53,7 @@ class MainViewController: UIViewController {
     private let weatherImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
+        image.contentMode = .scaleAspectFit
         return image
     }()
     
@@ -64,16 +67,30 @@ class MainViewController: UIViewController {
         table.estimatedRowHeight = 50
         return table
     }()
-
+    
     // MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("VIEW DID LOAD")
+        
+        weatherTable.register(WeatherViewCell.self, forCellReuseIdentifier: "weatherCell")
+        weatherTable.delegate = self
+        weatherTable.dataSource = self
+        
         setNavigationControls()
-        setViews()
+        setupViews()
         setLayoutConstraints()
         setViewText()
         setObservables()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshWeatherData), name: UIApplication.didBecomeActiveNotification, object: nil)
+        
+        self.refreshControl.addTarget(self, action: #selector(refreshWeatherData), for: .valueChanged)
+    }
+    
+    @objc func refreshWeatherData() {
+        self.viewModel.refreshWeatherData() {
+            self.refreshControl.endRefreshing()
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -83,22 +100,20 @@ class MainViewController: UIViewController {
         view.customGradient()
     }
     
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
         
-        setViews()
-        setLayoutConstraints()
-        
-        weatherStack.setNeedsLayout()
-        weatherStack.layoutIfNeeded()
-        
-        weatherImage.setNeedsLayout()
-        weatherImage.layoutIfNeeded()
-        
-        weatherTable.setNeedsLayout()
-        weatherTable.layoutIfNeeded()
+        if UIDevice.current.orientation.isLandscape {
+            self.weatherImage.isHidden = true
+            NSLayoutConstraint.deactivate(self.regularConstraints)
+            NSLayoutConstraint.activate(self.compactConstraints)
+        } else {
+            self.weatherImage.isHidden = false
+            NSLayoutConstraint.deactivate(self.compactConstraints)
+            NSLayoutConstraint.activate(self.regularConstraints)
+        }
     }
-    
-    
+
     // MARK: Functions
     private func setNavigationControls() {
         navigationController?.navigationBar.isTranslucent = false
@@ -110,12 +125,11 @@ class MainViewController: UIViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.searchController = searchController
         definesPresentationContext = true
-        
     }
     
     private func setObservables() {
         viewModel.$weatherInformation
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { result in
                 self.setViewText()
                 self.weatherTable.reloadData()
@@ -123,7 +137,7 @@ class MainViewController: UIViewController {
             .store(in: &cancellables)
         
         viewModel.$weatherImage
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { result in
                 self.weatherImage.image = self.viewModel.weatherImage
             }
@@ -131,60 +145,60 @@ class MainViewController: UIViewController {
     }
     
     private func setViewText() {
-        cityNameLabel.text = Stringify(viewModel.weatherInformation?.name)
-        weatherDescription.text = Stringify(viewModel.weatherInformation?.weather?[0].description)
-        weatherTemp.text = Stringify(RoundTemp(viewModel.weatherInformation?.main?.temp)) + "°F"
+        cityNameLabel.text = Utils.Stringify(viewModel.weatherInformation?.name)
+        weatherDescription.text = Utils.Stringify(viewModel.weatherInformation?.weather?[0].description)
+        weatherTemp.text = Utils.Stringify(Utils.RoundTemp(viewModel.weatherInformation?.main?.temp)) + "°F"
     }
     
-    private func setViews() {
-        weatherTable.register(WeatherViewCell.self, forCellReuseIdentifier: "weatherCell")
-        weatherTable.delegate = self
-        weatherTable.dataSource = self
-        
-        [cityNameLabel, weatherTemp, weatherDescription,].forEach { weatherStack.addArrangedSubview($0) }
+    private func setupViews() {
+        [cityNameLabel, weatherTemp, weatherDescription].forEach { weatherStack.addArrangedSubview($0) }
         
         /// simple refresh (does not actually move content - demo purpose)
         let scrollView = UIScrollView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: view.frame.size.height))
-        scrollView.refreshControl = UIRefreshControl()
-        scrollView.alwaysBounceVertical = true
+        
+        
+        scrollView.refreshControl = refreshControl
         view.addSubview(scrollView)
         
-        weatherStack.setCustomSpacing(20.0, after: cityNameLabel)
-        weatherStack.setCustomSpacing(0.0, after: weatherDescription)
-        
-        if UIDevice.current.orientation.isLandscape {
-            [weatherStack, weatherTable].forEach { scrollView.addSubview($0) }
-        } else {
-            [weatherStack, weatherImage, weatherTable].forEach { scrollView.addSubview($0) }
-        }
+        [weatherStack, weatherImage, weatherTable].forEach { view.addSubview($0) }
     }
     
     private func setLayoutConstraints() {
         
+        compactConstraints.append(contentsOf: [
+                            weatherStack.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
+                            weatherStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+                            weatherStack.trailingAnchor.constraint(equalTo: weatherTable.leadingAnchor),
+                            weatherStack.heightAnchor.constraint(equalToConstant: 200),
+                            weatherTable.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
+                            weatherTable.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+                            weatherTable.widthAnchor.constraint(equalToConstant: 400),
+                            weatherTable.heightAnchor.constraint(equalToConstant: 200 - 1), /// hack: removing buttom most separator
+                        ])
+        
+        regularConstraints.append(contentsOf: [
+                            weatherStack.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
+                            weatherStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+                            weatherStack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+                            weatherStack.heightAnchor.constraint(equalToConstant: 200),
+                            weatherImage.topAnchor.constraint(equalTo: weatherStack.bottomAnchor, constant: 20),
+                            weatherImage.bottomAnchor.constraint(equalTo: weatherTable.topAnchor, constant: -20),
+                            weatherImage.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+                            weatherImage.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+                            weatherTable.heightAnchor.constraint(equalToConstant: 200 - 1), /// hack: removing buttom most separator
+                            weatherTable.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -6),
+                            weatherTable.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+                            weatherTable.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor)
+                        ])
+        
         if UIDevice.current.orientation.isLandscape {
-            NSLayoutConstraint.activate([
-                weatherStack.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
-                weatherStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-                weatherStack.trailingAnchor.constraint(equalTo: weatherTable.leadingAnchor),
-                weatherTable.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
-                weatherTable.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-                weatherTable.widthAnchor.constraint(equalToConstant: view.layoutMarginsGuide.layoutFrame.size.width/2),
-                weatherTable.heightAnchor.constraint(equalToConstant: 200 - 1), /// hack: removing buttom most separator
-            ])
+            self.weatherImage.isHidden = true
+            NSLayoutConstraint.deactivate(self.regularConstraints)
+            NSLayoutConstraint.activate(self.compactConstraints)
         } else {
-            NSLayoutConstraint.activate([
-                weatherStack.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor, constant: 50),
-                weatherStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-                weatherStack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-                weatherImage.topAnchor.constraint(equalTo: weatherStack.bottomAnchor, constant: 20),
-                weatherImage.bottomAnchor.constraint(equalTo: weatherTable.topAnchor, constant: -20),
-                weatherImage.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-                weatherImage.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-                weatherTable.heightAnchor.constraint(equalToConstant: 200 - 1), /// hack: removing buttom most separator
-                weatherTable.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor),
-                weatherTable.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-                weatherTable.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor)
-            ])
+            self.weatherImage.isHidden = false
+            NSLayoutConstraint.deactivate(self.compactConstraints)
+            NSLayoutConstraint.activate(self.regularConstraints)
         }
     }
 }
@@ -201,16 +215,16 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         switch indexPath.row {
         case 0:
             cell.titleText = "Feels Like"
-            cell.infoText = Stringify(RoundTemp(viewModel.weatherInformation?.main?.feelsLike)) + "°F"
+            cell.infoText = Utils.Stringify(Utils.RoundTemp(viewModel.weatherInformation?.main?.feelsLike)) + "°F"
         case 1:
             cell.titleText = "Humidity"
-            cell.infoText = Stringify(viewModel.weatherInformation?.main?.humidity) + "%"
+            cell.infoText = Utils.Stringify(viewModel.weatherInformation?.main?.humidity) + "%"
         case 2:
             cell.titleText = "Pressure"
-            cell.infoText = Stringify(viewModel.weatherInformation?.main?.pressure) + "hPa"
+            cell.infoText = Utils.Stringify(viewModel.weatherInformation?.main?.pressure) + "hPa"
         case 3:
             cell.titleText = "Visibility"
-            cell.infoText = Stringify(viewModel.weatherInformation?.visibility) + "m"
+            cell.infoText = Utils.Stringify(viewModel.weatherInformation?.visibility) + "m"
         default:
             fatalError("reached more cells than there should be")
         }

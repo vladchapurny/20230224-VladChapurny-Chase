@@ -22,6 +22,7 @@
 		AD8AF07029AAE3760046D5D9 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8AF06F29AAE3760046D5D9 /* Utils.swift */; };
 		AD8AF07229AB13D80046D5D9 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8AF07129AB13D80046D5D9 /* LocationManager.swift */; };
 		AD8AF07429AB34E50046D5D9 /* Keys.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD8AF07329AB34E50046D5D9 /* Keys.plist */; };
+		AD8AF07829ABE93E0046D5D9 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8AF07729ABE93E0046D5D9 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		AD8AF06F29AAE3760046D5D9 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		AD8AF07129AB13D80046D5D9 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		AD8AF07329AB34E50046D5D9 /* Keys.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Keys.plist; sourceTree = "<group>"; };
+		AD8AF07729ABE93E0046D5D9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +158,7 @@
 				AD8AF03429AA77A20046D5D9 /* Assets.xcassets */,
 				AD8AF06229AA78B70046D5D9 /* Extensions.swift */,
 				AD8AF06F29AAE3760046D5D9 /* Utils.swift */,
+				AD8AF07729ABE93E0046D5D9 /* Constants.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -337,6 +340,7 @@
 				AD8AF06A29AAB0B50046D5D9 /* OpenWeatherAPI.swift in Sources */,
 				AD8AF06329AA78B70046D5D9 /* Extensions.swift in Sources */,
 				AD8AF06E29AAC8A90046D5D9 /* MainWeatherViewModel.swift in Sources */,
+				AD8AF07829ABE93E0046D5D9 /* Constants.swift in Sources */,
 				AD8AF02C29AA77A20046D5D9 /* AppDelegate.swift in Sources */,
 				AD8AF06729AA96830046D5D9 /* WeatherViewCell.swift in Sources */,
 				AD8AF07029AAE3760046D5D9 /* Utils.swift in Sources */,

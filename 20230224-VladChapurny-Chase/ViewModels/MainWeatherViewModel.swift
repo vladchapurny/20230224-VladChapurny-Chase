@@ -23,7 +23,7 @@ class MainWeatherViewModel: ObservableObject {
     init() {
         self.service = OpenWeatherAPI()
         self.locationService = LocationManager()
-        locationService.requestLocation()
+    
         locationService.coordinates
             .receive(on: DispatchQueue.main)
             .sink {
@@ -35,11 +35,45 @@ class MainWeatherViewModel: ObservableObject {
                 self.fetchWeatherInformation(lon: coordinates.longitude, lat: coordinates.latitude)
             }
             .store(in: &cancellables)
+        performLocationFetch()
+    }
+    
+    func refreshWeatherData(completion: () -> ()) {
+        performLocationFetch()
+        simpleImageCache.countLimit = 20 // they only have 18 icons
+        // Demo purpose ONLY completion to stop refresh icon
+        completion()
+    }
+    
+    func performLocationFetch() {
+        let auth: CLAuthorizationStatus
+        let service = CLLocationManager()
         
-        //fetchWeatherInformation(city: "")
+        if #available(iOS 14, *) {
+            auth = service.authorizationStatus
+        } else {
+            auth = CLLocationManager.authorizationStatus()
+        }
+        
+        switch auth {
+        case .authorizedAlways, .authorizedWhenInUse:
+            locationService.getLocation()
+            UserDefaults.standard.setValue("", forKey: "defaultLocation")
+        case .notDetermined:
+            locationService.attemptRequestPrompt()
+            UserDefaults.standard.setValue("", forKey: "defaultLocation")
+        default:
+            if let savedLocation = UserDefaults.standard.string(forKey: "defaultLocation"), !savedLocation.isEmpty {
+
+                fetchWeatherInformation(city: savedLocation)
+            }
+        }
     }
     
     func fetchWeatherInformation(city: String) {
+        
+        UserDefaults.standard.setValue(city, forKey: "defaultLocation")
+        
         service.currentWeather(city: city)
             .replaceError(with: WeatherResponse())
             .receive(on: DispatchQueue.main)

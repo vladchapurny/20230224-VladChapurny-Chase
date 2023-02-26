@@ -16,7 +16,7 @@ protocol OpenWeatherQueries {
 class OpenWeatherAPI: OpenWeatherQueries {
     func currentWeather(city: String) -> AnyPublisher<WeatherResponse, Error> {
         
-        guard let url = buildCityURL(city: city) else {
+        guard let url = Utils.buildCityURL(city: city) else {
             return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
         }
         
@@ -34,7 +34,7 @@ class OpenWeatherAPI: OpenWeatherQueries {
     
     func currentWeather(lat: Double, lon: Double) -> AnyPublisher<WeatherResponse, Error> {
         
-        guard let url = buildGeoURL(lat: lat, lon: lon) else {
+        guard let url = Utils.buildGeoURL(lat: lat, lon: lon) else {
             return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
         }
         

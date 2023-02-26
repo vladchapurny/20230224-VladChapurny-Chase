@@ -20,7 +20,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.delegate = self
     }
     
-    func requestLocation() {
+    func attemptRequestPrompt() {
+        manager.requestAlwaysAuthorization()
+    }
+    
+    func getLocation() {
         manager.requestLocation()
     }
     
@@ -30,6 +34,13 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        coordinates.send(completion: .failure(error))
+        // TODO: Add logic if it fails to get coordinates (should we keep previous location or update it to say something else (design decision)
+        
+        /// Simple way to tell publisher that there was an error and end it
+        //coordinates.send(completion: .failure(error))
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        manager.requestLocation()
     }
 }
