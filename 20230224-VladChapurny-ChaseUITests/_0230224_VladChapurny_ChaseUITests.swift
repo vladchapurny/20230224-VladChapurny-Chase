@@ -22,13 +22,18 @@ class _0230224_VladChapurny_ChaseUITests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
+    func testSanityNavigationView() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
-
-        // Use recording to get started writing UI tests.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        
+        let searchUsCitiesExPlanoSearchField = app.navigationBars["Current Weather"].searchFields["Search US Cities (ex. Plano)"]
+        XCTAssertTrue(searchUsCitiesExPlanoSearchField.waitForExistence(timeout: 30))
+        searchUsCitiesExPlanoSearchField.tap()
+        
+        let dismiss = app.otherElements["dismiss popup"]
+        XCTAssertTrue(dismiss.waitForExistence(timeout: 5))
+        dismiss.tap()
     }
 
     func testLaunchPerformance() throws {

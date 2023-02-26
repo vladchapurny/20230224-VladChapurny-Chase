@@ -22,7 +22,7 @@ extension UIView {
         /// Creating custom gradient
         let gradient: CAGradientLayer = CAGradientLayer()
         gradient.frame = bounds
-        gradient.colors = [UIColor.systemBlue.cgColor, UIColor.white.cgColor]
+        gradient.colors = [UIColor.systemBlue.cgColor, UIColor.systemBackground.cgColor]
         gradient.startPoint = CGPoint.zero
         layer.insertSublayer(gradient, at: 0)
     }

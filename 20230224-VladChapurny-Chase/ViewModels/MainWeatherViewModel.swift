@@ -11,18 +11,19 @@ import CoreLocation
 
 class MainWeatherViewModel: ObservableObject {
     
-    private let simpleImageCache = NSCache<NSString, UIImage>()
-    
     @Published var weatherInformation: WeatherResponse? = nil
     @Published var weatherImage: UIImage? = nil
     
-    private var cancellables = Set<AnyCancellable>()
     private let service: OpenWeatherAPI
     private let locationService: LocationManager
+    private let simpleImageCache = NSCache<NSString, UIImage>()
     
-    init() {
-        self.service = OpenWeatherAPI()
-        self.locationService = LocationManager()
+    private var cancellables = Set<AnyCancellable>()
+    
+    init(service: OpenWeatherAPI = OpenWeatherAPI(), locationService: LocationManager = LocationManager()) {
+        
+        self.service = service
+        self.locationService = locationService
     
         locationService.coordinates
             .receive(on: DispatchQueue.main)
@@ -45,7 +46,21 @@ class MainWeatherViewModel: ObservableObject {
         completion()
     }
     
-    func performLocationFetch() {
+    func fetchWeatherInformation(city: String) {
+        
+        UserDefaults.standard.setValue(city, forKey: "defaultLocation")
+        
+        service.currentWeather(city: city)
+            .replaceError(with: WeatherResponse())
+            .receive(on: DispatchQueue.main)
+            .sink { // Since I am replacing error we will never have a completion case where it fails technically
+                self.weatherInformation = $0
+                self.fetchWeatherImage()
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func performLocationFetch() {
         let auth: CLAuthorizationStatus
         let service = CLLocationManager()
         
@@ -68,20 +83,6 @@ class MainWeatherViewModel: ObservableObject {
                 fetchWeatherInformation(city: savedLocation)
             }
         }
-    }
-    
-    func fetchWeatherInformation(city: String) {
-        
-        UserDefaults.standard.setValue(city, forKey: "defaultLocation")
-        
-        service.currentWeather(city: city)
-            .replaceError(with: WeatherResponse())
-            .receive(on: DispatchQueue.main)
-            .sink { // Since I am replacing error we will never have a completion case where it fails technically
-                self.weatherInformation = $0
-                self.fetchWeatherImage()
-            }
-            .store(in: &cancellables)
     }
     
     private func fetchWeatherInformation(lon: Double, lat: Double) {

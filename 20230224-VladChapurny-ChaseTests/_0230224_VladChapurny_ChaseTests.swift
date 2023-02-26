@@ -9,28 +9,45 @@ import XCTest
 @testable import _0230224_VladChapurny_Chase
 
 class _0230224_VladChapurny_ChaseTests: XCTestCase {
+    
+    var roundResultDown: Double!
+    var roundResultUp: Double!
+    var stringifyDouble: Double!
+    var stringifyString: String!
+    var stringifyBool: Bool!
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
+        roundResultDown = 30.4999
+        roundResultUp = 30.5
+        stringifyDouble = 0.51239
+        stringifyString = "test"
+        stringifyBool = true
     }
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        roundResultDown = nil
+        roundResultUp = nil
+        stringifyDouble = nil
+        stringifyString = nil
+        stringifyBool = nil
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testBasicUtilTestStringify() throws {
+        XCTAssertEqual(Utils.Stringify(stringifyDouble), "0.51239")
+        XCTAssertEqual(Utils.Stringify(stringifyString), "test")
+        XCTAssertEqual(Utils.Stringify(stringifyBool), "true")
+        
+        let genericNil: Optional<Bool> = .none
+        XCTAssertEqual(Utils.Stringify(genericNil), "---")
+    }
+    
+    func testBasicUtilTestRoundTemp() throws {
+        XCTAssertEqual(Utils.RoundTemp(roundResultUp), 31)
+        XCTAssertEqual(Utils.RoundTemp(roundResultDown), 30)
+        XCTAssertNil(Utils.RoundTemp(nil))
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
+    // TODO: Add performance tests (self.measure)
 }

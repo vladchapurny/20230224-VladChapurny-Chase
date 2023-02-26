@@ -155,12 +155,11 @@ class MainViewController: UIViewController {
         
         /// simple refresh (does not actually move content - demo purpose)
         let scrollView = UIScrollView(frame: CGRect(x: 0, y: 0, width: view.frame.size.width, height: view.frame.size.height))
-        
-        
         scrollView.refreshControl = refreshControl
-        view.addSubview(scrollView)
-        
         [weatherStack, weatherImage, weatherTable].forEach { view.addSubview($0) }
+        
+        // Putting scrollview on top so you can swipe to refresh on any element
+        view.addSubview(scrollView)
     }
     
     private func setLayoutConstraints() {
